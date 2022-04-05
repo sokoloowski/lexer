@@ -6,26 +6,50 @@ use Sokoloowski\Lexer;
 
 class Main
 {
+    private static function color(string $color): string
+    {
+        $colors = [
+            "php_tag" => "#1e88e5",
+            "numeric" => "#a5d6a7",
+            "math_operator" => "#ffccbc",
+            "text" => "#ff8a65"
+        ];
+
+        return sprintf('<span style="color: %s">', $colors[$color]);
+    }
+
     public static function main(): void
     {
         $tokens = [];
-        $lex = new Lexer("<?php 512<61.23+132-123*432>2435/5454<=56>=34");
+
+        $html = '<html><head><style>html,body{background-color:#263238;color:#fefefe;font-family:"Fira Code"}</style></head><body>';
+
+        $lex = new Lexer("<?php 512 < 61.23 + 132 - 123 * 432 > 2435 / 5454 <= 56 >= 34 \"asd asdasd\"");
 
         do {
-            $char = $lex->consume();
+            $char = $lex->peek();
+
+            if (preg_match("/\s/", $char)) {
+                $html .= $lex->consume();
+                continue;
+            }
 
             if (preg_match("/\d/", $char)) {
+                $html .= self::color("numeric");
                 while (preg_match("/\d/", $lex->peek())) {
-                    $lex->consume();
+                    $html .= $lex->consume();
                 }
                 if ($lex->peek() === ".") {
-                    $lex->consume();
+                    $html .= $lex->consume();
                     if (!preg_match("/\d/", $lex->peek())) {
                         die(sprintf("Expected digit on line %d at position %d\n", $lex->getLine(), $lex->getColumn()));
                     }
-                    
+
                     while (preg_match("/\d/", $lex->peek())) {
-                        $lex->consume();
+                        $html .= $lex->consume();
+                        if ($lex->peek() === ".") {
+                            die(sprintf("Expected digit on line %d at position %d, got \".\"\n", $lex->getLine(), $lex->getColumn()));
+                        }
                     }
 
                     $tokens[] = "float ";
@@ -33,28 +57,65 @@ class Main
                     $tokens[] = "integer ";
                 }
             } elseif ($char === "<") {
-                if ($lex->peek() === "?") {
-                    if (sprintf("%s%s%s", $lex->peek(1), $lex->peek(2), $lex->peek(3)) === "php") {
-                        $lex->consume();
-                        $lex->consume();
-                        $lex->consume();
-                        $lex->consume();
-                        if (!preg_match("/\s/", $lex->consume())) {
-                            die(sprintf("Expected \" \" on line %d at position %d\n", $lex->getLine(), $lex->getColumn()));
-                        }
-                        $tokens[] = "php_opening_tag ";
+                if ($lex->peek(1) === "?") {
+                    $html .= self::color("php_tag");
+
+                    // <?
+                    $html .= $lex->consume();
+                    $html .= $lex->consume();
+
+                    $php = "";
+                    $php .= $lex->consume();
+                    $php .= $lex->consume();
+                    $php .= $lex->consume();
+
+                    if ($php !== "php") {
+                        die(sprintf("Expected \"<?php\" on line %d at position %d\n", $lex->getLine(), $lex->getColumn()));
                     }
-                } elseif ($lex->peek() === " " || $lex->peek() === "=" || preg_match("/\d/", $lex->peek())) {
+
+                    $html .= $php;
+
+                    if (!preg_match("/\s/", $lex->peek())) {
+                        die(sprintf("Expected \" \" on line %d at position %d, found \"%s\"\n", $lex->getLine(), $lex->getColumn(), $lex->consume()));
+                    }
+                    $tokens[] = "php_opening_tag ";
+                } elseif ($lex->peek(1) === " " || $lex->peek(1) === "=" || preg_match("/\d/", $lex->peek(1))) {
+                    $html .= self::color("math_operator");
+                    $html .= $lex->consume();
                     $tokens[] = "math_operator ";
                 }
-            } elseif (preg_match("/[\+\-\/\*\>]/", $char)) {
-                if ($lex->peek() === " " || (preg_match("/[<>]/", $char) && $lex->peek() === "=") || preg_match("/\d/", $lex->peek())) {
+            } elseif (preg_match("/[\+\-\/\*=\>]/", $char)) {
+                if ($lex->peek(1) === " " || ($char === ">" && $lex->peek(1) === "=") || preg_match("/\d/", $lex->peek(1))) {
+                    $html .= self::color("math_operator");
+                    $html .= $lex->consume();
                     $tokens[] = "math_operator ";
                 }
+            } elseif ($char === "'" || $char === '"') {
+                $html .= self::color("text");
+                $html .= $lex->consume();
+                while ($lex->peek() !== '"' && $lex->peek() !== "'") {
+                    if ($lex->peek() === "\n") {
+                        die(sprintf("Unexpected new line on line %d at position %d\n", $lex->getLine(), $lex->getColumn()));
+                    }
+
+                    $html .= $lex->consume();
+                }
+                $html .= $lex->consume();
+                $tokens[] = "text ";
+            } else {
+                $html .= $lex->consume();
             }
+
+            $html .= "</span>";
 
             // echo sprintf("--- %s ---", $lex);
         } while (!$lex->isEOF());
+
+        $html .= "</body></html>";
+        if (!file_exists(__DIR__ . '/../out')) {
+            mkdir(__DIR__ . '/../out');
+        }
+        file_put_contents(__DIR__ . '/../out/index.html', $html);
 
         echo implode(" ", $tokens);
 

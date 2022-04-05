@@ -61,7 +61,7 @@ class Lexer
 
         $this->input = substr($this->input, 0, $k) . substr($this->input, $k + 1);
     
-        return $char;
+        return htmlspecialchars($char);
     }
     
     public function isEOF() : bool
