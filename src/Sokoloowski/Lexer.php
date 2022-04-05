@@ -25,17 +25,17 @@ class Lexer
         return $this->input;
     }
 
-    public function getColumn() : int
+    public function getColumn(): int
     {
         return $this->column;
     }
 
-    public function getLine() : int
+    public function getLine(): int
     {
         return $this->line;
     }
 
-    public function peek(int $k = 0) : string
+    public function peek(int $k = 0): string
     {
         try {
             return $this->input[$k];
@@ -44,7 +44,7 @@ class Lexer
         }
     }
 
-    public function consume(int $k = 0) : string
+    public function consume(int $k = 0): string
     {
         try {
             $char = $this->input[$k];
@@ -60,12 +60,12 @@ class Lexer
         }
 
         $this->input = substr($this->input, 0, $k) . substr($this->input, $k + 1);
-    
+
         return htmlspecialchars($char);
     }
-    
-    public function isEOF() : bool
-    {    
+
+    public function isEOF(): bool
+    {
         return strlen($this->input) === 0;
     }
 }
