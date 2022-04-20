@@ -13,6 +13,7 @@ class Main
             "numeric" => "#a5d6a7",
             "math_operator" => "#ffccbc",
             "variable" => "#81d4fa",
+            "comment" => "#008000",
             "text" => "#ff8a65"
         ];
 
@@ -79,6 +80,14 @@ EOT;
                 } else {
                     $tokens[] = "integer";
                 }
+            } elseif ($char === "/" && $lex->peek(1) === "/") {
+                $html .= self::color("comment");
+
+                while ($lex->peek() !== "\n") {
+                    $html .= $lex->consume();
+                }
+
+                $tokens[] = "comment";
             } elseif ($char === "$") {
                 $html .= self::color("variable");
                 $html .= $lex->consume();
