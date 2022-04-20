@@ -151,6 +151,8 @@ EOT;
 
                 $tokens[] = "semicolon\n";
             } else {
+                die(sprintf("Unexpected character `%s` on line %d at position %d\n", $lex->peek(), $lex->getLine(), $lex->getColumn()));
+
                 $html .= $lex->consume();
 
                 $tokens[] = "other";
