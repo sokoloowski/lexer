@@ -12,6 +12,7 @@ class Main
             "php_tag" => "#1e88e5",
             "numeric" => "#a5d6a7",
             "math_operator" => "#ffccbc",
+            "variable" => "#81d4fa",
             "text" => "#ff8a65"
         ];
 
@@ -22,9 +23,30 @@ class Main
     {
         $tokens = [];
 
-        $html = '<html><head><style>html,body{background-color:#263238;color:#fefefe;font-family:"Fira Code"}</style></head><body>';
+        $html = <<<EOT
+<html>
+    <head>
+        <style>
+            html,
+            body {
+                background-color: #263238;
+                color: #fefefe;
+            }
 
-        $lex = new Lexer("<?php 512 < 61.23 + 132 - 123 * 432 > 2435 / 5454 <= 56 >= 34 \"asd asdasd\"");
+            pre {
+                font-family: "Fira Code";
+            }
+        </style>
+    </head>
+
+    <body>
+        <!-- Auto-generated stuff -->
+<pre>
+EOT;
+
+        $lex = new Lexer(
+            file_get_contents(__DIR__ . "/example.php")
+        );
 
         do {
             $char = $lex->peek();
@@ -56,6 +78,12 @@ class Main
                 } else {
                     $tokens[] = "integer ";
                 }
+            } elseif ($char === "$") {
+                $html .= self::color("variable");
+                while (preg_match("/[^\s]/", $lex->peek())) {
+                    $html .= $lex->consume();
+                }
+                $tokens[] = "variable ";
             } elseif ($char === "<") {
                 if ($lex->peek(1) === "?") {
                     $html .= self::color("php_tag");
@@ -102,8 +130,14 @@ class Main
                 }
                 $html .= $lex->consume();
                 $tokens[] = "text ";
+            } elseif ($char === ";") {
+                $html .= $lex->consume();
+
+                $tokens[] = "semicolon\n";
             } else {
                 $html .= $lex->consume();
+
+                $tokens[] = "other ";
             }
 
             $html .= "</span>";
@@ -111,7 +145,12 @@ class Main
             // echo sprintf("--- %s ---", $lex);
         } while (!$lex->isEOF());
 
-        $html .= "</body></html>";
+        $html .= <<<EOT
+</pre>
+        <!-- Auto-generated stuff -->
+    </body>
+</html>
+EOT;
         if (!file_exists(__DIR__ . '/../out')) {
             mkdir(__DIR__ . '/../out');
         }
