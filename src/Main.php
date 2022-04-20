@@ -63,6 +63,7 @@ EOT;
                 }
                 if ($lex->peek() === ".") {
                     $html .= $lex->consume();
+                    
                     if (!preg_match("/\d/", $lex->peek())) {
                         die(sprintf("Expected digit on line %d at position %d\n", $lex->getLine(), $lex->getColumn()));
                     }
@@ -80,6 +81,12 @@ EOT;
                 }
             } elseif ($char === "$") {
                 $html .= self::color("variable");
+                $html .= $lex->consume();
+
+                if (preg_match("/[^_a-zA-Z]/", $lex->peek())) {
+                    die(sprintf("Expected letter or `_` on line %d at position %d\n", $lex->getLine(), $lex->getColumn()));
+                }
+
                 while (preg_match("/[^\s]/", $lex->peek())) {
                     $html .= $lex->consume();
                 }
