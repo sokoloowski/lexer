@@ -64,7 +64,7 @@ EOT;
                 }
                 if ($lex->peek() === ".") {
                     $html .= $lex->consume();
-                    
+
                     if (!preg_match("/\d/", $lex->peek())) {
                         die(sprintf("Expected digit on line %d at position %d\n", $lex->getLine(), $lex->getColumn()));
                     }
