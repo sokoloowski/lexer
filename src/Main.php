@@ -75,9 +75,9 @@ EOT;
                         }
                     }
 
-                    $tokens[] = "float ";
+                    $tokens[] = "float";
                 } else {
-                    $tokens[] = "integer ";
+                    $tokens[] = "integer";
                 }
             } elseif ($char === "$") {
                 $html .= self::color("variable");
@@ -90,7 +90,7 @@ EOT;
                 while (preg_match("/[^\s]/", $lex->peek())) {
                     $html .= $lex->consume();
                 }
-                $tokens[] = "variable ";
+                $tokens[] = "variable";
             } elseif ($char === "<") {
                 if ($lex->peek(1) === "?") {
                     $html .= self::color("php_tag");
@@ -113,17 +113,17 @@ EOT;
                     if (!preg_match("/\s/", $lex->peek())) {
                         die(sprintf("Expected \" \" on line %d at position %d, found \"%s\"\n", $lex->getLine(), $lex->getColumn(), $lex->consume()));
                     }
-                    $tokens[] = "php_opening_tag ";
+                    $tokens[] = "php_opening_tag";
                 } elseif ($lex->peek(1) === " " || $lex->peek(1) === "=" || preg_match("/\d/", $lex->peek(1))) {
                     $html .= self::color("math_operator");
                     $html .= $lex->consume();
-                    $tokens[] = "math_operator ";
+                    $tokens[] = "math_operator";
                 }
             } elseif (preg_match("/[\+\-\/\*=\>]/", $char)) {
                 if ($lex->peek(1) === " " || ($char === ">" && $lex->peek(1) === "=") || preg_match("/\d/", $lex->peek(1))) {
                     $html .= self::color("math_operator");
                     $html .= $lex->consume();
-                    $tokens[] = "math_operator ";
+                    $tokens[] = "math_operator";
                 }
             } elseif ($char === "'" || $char === '"') {
                 $html .= self::color("text");
@@ -136,7 +136,7 @@ EOT;
                     $html .= $lex->consume();
                 }
                 $html .= $lex->consume();
-                $tokens[] = "text ";
+                $tokens[] = "text";
             } elseif ($char === ";") {
                 $html .= $lex->consume();
 
@@ -144,7 +144,7 @@ EOT;
             } else {
                 $html .= $lex->consume();
 
-                $tokens[] = "other ";
+                $tokens[] = "other";
             }
 
             $html .= "</span>";
