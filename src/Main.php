@@ -159,8 +159,6 @@ EOT;
             }
 
             $html .= "</span>";
-
-            // echo sprintf("--- %s ---", $lex);
         } while (!$lex->isEOF());
 
         $html .= <<<EOT
