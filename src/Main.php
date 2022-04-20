@@ -30,7 +30,7 @@ class Main
         <style>
             html,
             body {
-                background-color: #263238;
+                background-color: #1e1e1e;
                 color: #fefefe;
             }
 
